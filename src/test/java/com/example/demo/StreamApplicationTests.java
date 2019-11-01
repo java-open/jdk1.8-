@@ -288,6 +288,18 @@ public class StreamApplicationTests {
 			System.out.println(person);
 		}
 
+		/*
+			使用stream流完成上述流程
+		 */
+		//第一个队伍只要名字为3个字的成员,且只要前三个
+		Stream<String> stream1 = one.stream().filter(name -> name.length() == 3).limit(3);
+		//第二个队伍只要姓张的成员,不要前两个人
+		Stream<String> twostream = two.stream().filter(name -> name.startsWith("张")).skip(2);
+		//把两个队伍结果合并到一个队伍中,存储到一个新集合中,根据姓名创建person对象,打印整个队伍的person信息
+		Stream.concat(stream1,twostream).map(name->new Person(name)).forEach(s->System.out.println(s));
+
+
+
 
 	}
 
