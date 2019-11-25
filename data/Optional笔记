@@ -1,0 +1,293 @@
+## ** JAVA8新特性-Optional类解决NPE问题**
+
+#### [**github 详细参考](https://github.com/java-open/jdk1.8-):**https://github.com/java-open/jdk1.8-
+
+- ### **API介绍**
+
+> 1、Optional(T value),        empty(),        of(T value),       ofNullable(T value)
+>
+>   *of(T value),*   
+
+--通过of(T value)函数所构造出的Optional对象，当Value值为空时，依然会报NullPointerException。
+
+--通过of(T value)函数所构造出的Optional对象，当Value值不为空时，能正常构造Optional对象。
+
+> *ofNullable(T value)*
+
+当value值为null时，of(T value)会报NullPointerException异常；ofNullable(T value)不会throw Exception，ofNullable(T value)直接返回一个EMPTY对象
+
+> *orElse和orElseGet*
+
+相当于value值为null时，给予一个默认值:当user值不为null时，orElse函数依然会执行createUser()方法，而orElseGet函数并不会执行createUser()方法
+
+
+
+```java
+public User createUser(){    
+User user = new User();    
+user.setName("zhangsan");  
+return user;
+} 
+
+@Test public void test() {  
+User user = null;    
+user = Optional.ofNullable(user).orElse(createUser());    
+user = Optional.ofNullable(user).orElseGet(() -> createUser()); 
+} 
+
+
+```
+
+> *orElseThrow*
+
+就是value值为null时,直接抛一个异常出去
+
+```
+User user = null;
+Optional.ofNullable(user).orElseThrow(()->new Exception("用户不存在")); 
+```
+
+
+
+> *map(Function<? super T, ? extends U> mapper)和flatMap(Function<? super T, Optional<U>> mapper)*
+
+两个函数做的是转换值的操作。
+
+在具体用法上，对于map而言：
+
+如果User结构是下面这样的:  
+
+```java
+public class User {  
+
+   private String name;   
+
+  public String getName() {     
+
+   return name;   
+
+  } } 
+```
+
+这时候取name的写法如下所示 
+
+```java
+ String city = Optional.ofNullable(user).map(u-> u.getName()).get(); 
+```
+
+
+
+对于flatMap而言:
+
+ 如果User结构是下面这样的  
+
+```
+public class User {   
+private String name;    
+public Optional<String> getName() {     
+return Optional.ofNullable(name);   
+} 
+}
+```
+
+ 这时候取name的写法如下所示 
+
+```
+ String city = Optional.ofNullable(user).flatMap(u-> u.getName()).get(); 
+```
+
+
+
+> *isPresent()和ifPresent(Consumer<? super T> consumer)*
+
+isPresent即判断value值是否为空，而ifPresent就是在value值不为空时，做一些操作。
+
+至于ifPresent(Consumer<? super T> consumer)，用法也很简单，如下所示
+
+```
+Optional.ofNullable(user).ifPresent(u->{ 
+// TODO: do something 
+}); 
+```
+
+
+
+> *filter(Predicate<? super T> predicate)*
+
+filter 方法接受一个 Predicate 来对 Optional 中包含的值进行过滤，如果包含的值满足条件，那么还是返回这个 Optional；否则返回 Optional.empty。
+
+
+
+用法如下
+
+
+
+```
+Optional<User> user1 = Optional.ofNullable(user).filter(u -> u.getName().length()<6);
+```
+
+ 如上所示，如果user的name的长度是小于6的，则返回。如果是大于6的，则返回一个EMPTY对象。 
+
+
+
+
+
+### 案例用法
+
+
+
+在函数方法中
+
+
+
+以前写法
+
+
+
+```
+public String getCity(User user)  throws Exception{         if(user!=null){            
+	if(user.getAddress()!=null){ 
+		Address address = user.getAddress();                 						if(address.getCity()!=null){ 
+				return address.getCity();      
+			}            
+		}        
+	}       
+throw new Excpetion("取值错误");     
+} 
+```
+
+
+
+
+
+JAVA8写法
+
+
+
+```java
+public String getCity(User user) throws Exception{ 
+return Optional.ofNullable(user)
+.map(u-> u.getAddress())
+.map(a->a.getCity())
+.orElseThrow(()->new Exception("取指错误")); 
+}    
+
+
+```
+
+
+
+常用方法
+
+```java
+package com.example.demo;
+
+import com.example.demo.entity.Employee;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Optional;
+
+/**
+ * Optional类测试
+ */
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class TestOptional {
+    /*
+	 * Optional容器类的常用方法：
+	 * 	of(T value)：创建一个Optional实例
+	 */
+    @Test
+    public void test1() {
+        Optional<Employee> op = Optional.of(new Employee());
+        System.out.println(op.get());
+    }
+
+    /*
+	 * 	empty()：创建一个空的Optional实例
+	 */
+    @Test
+    public void test2() {
+        Optional<Employee> op = Optional.empty();
+        System.out.println(op.get());
+    }
+
+    /*
+	 * 	ofNullable(T value)：若T不为null，创建Optional实例，否则创建空实例
+	 * 	isPresent()：判断是否包含值
+	 * 	orElse(T other)：如果调用对象包含值，返回该值，否则返回other
+	 * 	orElseGet(T other)：如果调用对象包含值，返回该值，否则返回other获取的值
+	 */
+    @Test
+    public void test3() {
+        Optional<Employee> op = Optional.ofNullable(null);
+//		System.out.println(op.get());
+
+        System.out.println(op.isPresent());
+
+        Employee emp = op.orElse(new Employee("张三","公关"));
+        System.out.println(emp);
+        Employee emp1 = op.orElseGet(() -> new Employee());
+
+       System.out.println(emp1);
+    }
+
+
+    /*
+ * 	map(Function mapper)：如果有值对其处理，并返回处理后的Optional，否则返回Optional.empty()
+ * 	flatMap(Function mapper)：与map类似，要求返回值必须是Optional
+ */
+    @Test
+    public void test4() {
+        Optional<Employee> op = Optional.ofNullable(new Employee("张三", "出台"));
+        Optional<String> str = op.map((e) -> e.getName());
+        System.out.println(str.get());
+
+        Optional<String> str1 = op.flatMap((e) -> Optional.of(e.getName()));
+        System.out.println(str1.get());
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
+
+例二
+
+
+
+比如，在主程序中
+
+
+
+以前写法
+
+
+
+if(user!=null){     dosomething(user); } 
+
+
+
+
+
+JAVA8写法
+
+  Optional.ofNullable(user)     .ifPresent(u->{         dosomething(u); }); 
+
+ 
