@@ -3,6 +3,7 @@ package com.example.demo;
 import com.example.demo.pojo.Person;
 import com.sun.webkit.BackForwardList;
 import net.bytebuddy.asm.Advice;
+import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -206,6 +207,40 @@ public class StreamApplicationTests {
 		Stream<String> concat = Stream.concat(stream1, stream2);
 		//遍历组合的流
 		concat.forEach(name->System.out.println(name));
+
+	}
+
+	/**
+	 * 常用stream方法
+	 * reduce()、count()，sum()等方法。
+	 reduce()方法有三种形式：
+	 Optionalreduce(BinaryOperator accumulator)
+	 T reduce(T identity, BinaryOperator accumulator)
+	 U reduce(U identity, BiFunction accumulator, BinaryOperator combiner)
+	 eg：
+	 一个参数的reduce方法：
+	 */
+	@Test
+	public void testReduce(){
+		//有两个参数,第一个参数是上次函数执行的返回值(中间结果),第二个参数是stream中的元素,这个函数把这两个值相加,得到的和会被赋值给下次执行这个函数的第一个参数
+		//第一次执行的时候第一个参数的值是stream中的第一个元素,第二个参数是stream中的第二个元素
+		//这个方法的返回值是Optional,这是java防止npe的一种可行方法
+		List<Integer> ints = Lists.newArrayList(1,2,3,4,5,6,7,8,9);
+		Integer total = ints.stream().reduce((sum, item)->sum+item).get();
+		System.out.println("ins sum is"+ total);
+
+		//两个参数 它允许用户提供一个循环计算的初始值,如果stream为空,,就直接返回该值. 这个方法不会返回optional 因为其不会出现null值.
+		List<Integer> ints2 = Lists.newArrayList(1,2,3,4,5);
+		System.out.println("sum is"+ints2.stream().reduce(10,(sum,item)->sum+item) );
+
+
+		//对比count方法 返回元素数量
+		List<Integer> ints3 = Lists.newArrayList(1,2,3,4,5);
+		System.out.println("sum is"+ints2.stream().count());
+
+
+
+
 
 	}
 
